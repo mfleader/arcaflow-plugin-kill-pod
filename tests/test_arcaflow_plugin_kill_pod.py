@@ -33,6 +33,7 @@ class KillPodTest(unittest.TestCase):
     def test_not_enough_pods(self):
         name = "".join(random.choices(string.ascii_lowercase, k=8))
         output_id, output_data = arcaflow_plugin_kill_pod.kill_pods(
+            self.id(),
             arcaflow_plugin_kill_pod.KillPodConfig(
                 namespace_pattern=re.compile("^default$"),
                 name_pattern=re.compile("^unit-test-" + re.escape(name) + "$"),
@@ -98,6 +99,7 @@ class KillPodTest(unittest.TestCase):
             self.addCleanup(remove_test_pod)
 
             output_id, output_data = arcaflow_plugin_kill_pod.kill_pods(
+                self.id(),
                 arcaflow_plugin_kill_pod.KillPodConfig(
                     namespace_pattern=re.compile("^default$"),
                     name_pattern=re.compile("^" + re.escape(pod.metadata.name) + "$"),
@@ -149,6 +151,7 @@ class WaitForPodTest(unittest.TestCase):
     def test_timeout(self):
         name = "watch-test-" + "".join(random.choices(string.ascii_lowercase, k=8))
         output_id, output_data = arcaflow_plugin_kill_pod.wait_for_pods(
+            self.id(),
             arcaflow_plugin_kill_pod.WaitForPodsConfig(
                 namespace_pattern=re.compile("^default$"),
                 name_pattern=re.compile("^" + re.escape(name) + "$"),
@@ -203,6 +206,7 @@ class WaitForPodTest(unittest.TestCase):
             t.start()
 
             output_id, output_data = arcaflow_plugin_kill_pod.wait_for_pods(
+                self.id(),
                 arcaflow_plugin_kill_pod.WaitForPodsConfig(
                     namespace_pattern=re.compile("^default$"),
                     name_pattern=re.compile("^" + re.escape(name) + "$"),

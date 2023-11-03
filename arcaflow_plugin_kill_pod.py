@@ -153,6 +153,7 @@ class KillPodConfig:
     )
 
 
+
 @plugin.step(
     "kill-pods",
     "Kill pods",
@@ -160,20 +161,20 @@ class KillPodConfig:
     {"success": PodKillSuccessOutput, "error": PodErrorOutput},
 )
 def kill_pods(
-    cfg: KillPodConfig,
+    params: KillPodConfig,
 ) -> typing.Tuple[str, typing.Union[PodKillSuccessOutput, PodErrorOutput]]:
     try:
-        with setup_kubernetes(cfg.kubeconfig_path) as cli:
+        with setup_kubernetes(params.kubeconfig_path) as cli:
             core_v1 = client.CoreV1Api(cli)
 
             # region Select target pods
             pods = _find_pods(
-                core_v1, cfg.label_selector, cfg.name_pattern, cfg.namespace_pattern
+                core_v1, params.label_selector, params.name_pattern, params.namespace_pattern
             )
-            if len(pods) < cfg.kill:
+            if len(pods) < params.kill:
                 return "error", PodErrorOutput(
                     "Not enough pods match the criteria, expected {} but found only {} pods".format(
-                        cfg.kill, len(pods)
+                        params.kill, len(pods)
                     )
                 )
             random.shuffle(pods)
@@ -182,7 +183,7 @@ def kill_pods(
             # region Remove pods
             killed_pods: typing.Dict[int, Pod] = {}
             watch_pods: typing.List[Pod] = []
-            for i in range(cfg.kill):
+            for i in range(params.kill):
                 pod = pods[i]
                 kill_time=time.time_ns()
 
@@ -202,7 +203,7 @@ def kill_pods(
             # region Wait for pods to be removed
             start_time = time.time()
             while len(watch_pods) > 0:
-                time.sleep(cfg.backoff)
+                time.sleep(params.backoff)
                 new_watch_pods: typing.List[Pod] = []
                 for p in watch_pods:
                     try:
@@ -219,7 +220,7 @@ def kill_pods(
                             raise
                 watch_pods = new_watch_pods
                 current_time = time.time()
-                if current_time - start_time > cfg.timeout:
+                if current_time - start_time > params.timeout:
                     return "error", PodErrorOutput(
                         "Timeout while waiting for pods to be removed."
                     )
